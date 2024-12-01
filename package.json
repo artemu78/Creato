@@ -1,0 +1,41 @@
+{
+  "name": "creato",
+  "version": "1.0.0",
+  "description": "Electron app for generating MP3 files from text",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron-forge start",
+    "make": "electron-forge make",
+    "package": "electron-forge package",
+    "make:windows-x64": "electron-forge make --platform=win32 --arch=x64",
+    "make:windows-ia32": "electron-forge make --platform=win32 --arch=ia32",
+    "make:windows-arm64": "electron-forge make --platform=win32 --arch=arm64",
+    "make:linux-x64": "electron-forge make --platform=linux --arch=x64",
+    "make:linux-arm64": "electron-forge make --platform=linux --arch=arm64",
+    "make:mac-intel": "electron-forge make --platform=darwin --arch=x64",
+    "make:mac-arm": "electron-forge make --platform=darwin --arch=arm64",
+    "make:all": "npm-run-all make:windows-x64 make:windows-ia32 make:windows-arm64 make:linux-x64 make:linux-arm64 make:mac-intel make:mac-arm"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.6.0",
+    "@electron-forge/maker-deb": "^7.6.0",
+    "@electron-forge/maker-rpm": "^7.6.0",
+    "@electron-forge/maker-squirrel": "^7.6.0",
+    "@electron-forge/maker-zip": "^7.6.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
+    "@electron-forge/plugin-fuses": "^7.6.0",
+    "@electron/fuses": "^1.8.0",
+    "electron": "^33.2.1",
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

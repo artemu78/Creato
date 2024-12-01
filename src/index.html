@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text to MP3 Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="renderer.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <button id="settings-btn">⚙️</button>
+      <h1>Text to MP3 Generator</h1>
+      <form id="mp3-generator-form">
+        <div class="form-group">
+          <label for="text-input">Enter Text:</label>
+          <textarea
+            id="text-input"
+            rows="6"
+            placeholder="Type or paste text here..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="folder-input">Select Output Folder:</label>
+          <input
+            type="file"
+            id="folder-input"
+            webkitdirectory
+            directory
+            multiple
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="file-name">File Name:</label>
+          <input type="text" id="file-name" placeholder="Enter file name" />
+        </div>
+
+        <button type="button" id="generate-btn" class="button">Generate</button>
+      </form>
+    </div>
+    <div id="settings-modal" class="modal">
+      <div class="modal-content">
+        <h2>Settings</h2>
+        <form id="settings-form">
+          <label for="eleven-labs-key">Eleven Labs API Key:</label>
+          <input
+            type="text"
+            id="eleven-labs-key"
+            placeholder="Enter Eleven Labs API Key"
+          />
+
+          <label for="hydra-key">Hydra API Key:</label>
+          <input type="text" id="hydra-key" placeholder="Enter Hydra API Key" />
+
+          <label for="openai-key">OpenAI API Key:</label>
+          <input
+            type="text"
+            id="openai-key"
+            placeholder="Enter OpenAI API Key"
+          />
+
+          <button type="submit" class="button">Save</button>
+        </form>
+        <button id="close-settings" class="button">Close</button>
+      </div>
+    </div>
+  </body>
+</html>
