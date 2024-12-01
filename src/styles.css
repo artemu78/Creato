@@ -37,7 +37,7 @@ h1 {
 }
 
 /* Form styling */
-form {
+.form {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -118,4 +118,45 @@ input[type="file"]:focus {
   cursor: pointer;
   background-color: transparent;
   transition: background 0.3s;
+}
+
+.button-pending {
+  position: relative;
+  cursor: not-allowed;
+  background: #ddd;
+}
+
+.button-pending::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 2px solid #ccc;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.horizontal-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.visible {
+  display: block;
 }

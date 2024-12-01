@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Text to MP3 Generator</title>
     <link rel="stylesheet" href="styles.css" />
-    <script src="renderer.js"></script>
+    <script type="module" src="renderer.js"></script>
   </head>
   <body>
     <div class="container">
       <button id="settings-btn">⚙️</button>
-      <h1>Text to MP3 Generator</h1>
-      <form id="mp3-generator-form">
+      <h1>Text to Speech to Video Generator</h1>
+      <form id="mp3-generator-form" class="form">
         <div class="form-group">
           <label for="text-input">Enter Text:</label>
           <textarea
@@ -20,30 +20,54 @@
             placeholder="Type or paste text here..."
           ></textarea>
         </div>
+        <span id="audio-controls" class="form">
+          <div class="form-group">
+            <label for="voice-select">Choose a Voice:</label>
+            <div class="horizontal-layout">
+              <select id="voice-select" onselect="showVoiceDetails">
+                <option value="">None</option>
+              </select>
+              <div id="voice-details"></div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="folder-input">Select Output Folder:</label>
-          <input
-            type="file"
-            id="folder-input"
-            webkitdirectory
-            directory
-            multiple
-          />
-        </div>
+          <div class="horizontal-layout">
+            <div class="form-group">
+              <label for="folder-input">Select Output Folder:</label>
+              <input
+                type="file"
+                id="folder-input"
+                webkitdirectory
+                directory
+                multiple
+              />
+            </div>
+            <div class="form-group">
+              <label for="file-name">File Name:</label>
+              <input type="text" id="file-name" placeholder="Enter file name" />
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="file-name">File Name:</label>
-          <input type="text" id="file-name" placeholder="Enter file name" />
-        </div>
-
-        <button type="button" id="generate-btn" class="button">Generate</button>
+          <button type="button" id="generate-btn" class="button">
+            Generate audio
+          </button>
+        </span>
+        <div id="audio-player"></div>
+        <span id="video-controls" class="hidden">
+          <div class="form-group">
+            <label for="video-character">Select Character:</label>
+            <input type="file" id="video-character" accept="image/*" />
+          </div>
+          <button type="button" id="generate-video-btn" class="button">
+            Generate Video
+          </button>
+        </span>
       </form>
     </div>
     <div id="settings-modal" class="modal">
       <div class="modal-content">
         <h2>Settings</h2>
-        <form id="settings-form">
+        <form id="settings-form" class="form">
           <label for="eleven-labs-key">Eleven Labs API Key:</label>
           <input
             type="text"
