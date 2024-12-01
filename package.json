@@ -4,6 +4,7 @@
   "description": "Electron app for generating MP3 files from text",
   "main": "src/main.js",
   "scripts": {
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron-forge start",
     "make": "electron-forge make",
@@ -21,6 +22,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@electron-forge/cli": "^7.6.0",
     "@electron-forge/maker-deb": "^7.6.0",
     "@electron-forge/maker-rpm": "^7.6.0",
@@ -29,12 +32,15 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
     "@electron-forge/plugin-fuses": "^7.6.0",
     "@electron/fuses": "^1.8.0",
+    "babel-loader": "^9.2.1",
     "electron": "^33.2.1",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.0",
+    "node-polyfill-webpack-plugin": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   }
