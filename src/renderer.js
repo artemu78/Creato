@@ -1,4 +1,5 @@
 const elevenVoices = {};
+let resultAudioFileName = "";
 const BASE_URL = "https://mercury.dev.dream-ai.com/api";
 
 const closeSettingsClick = () => {
@@ -81,82 +82,57 @@ const saveSettingsClick = async (e) => {
 
 const generateAudioFile = async () => {
   const text = document.getElementById("text-input").value;
-  const folderInput = document.getElementById("folder-input").files[0];
-  const fileName = document.getElementById("file-name").value || "output.mp3";
+  const folderPath = document.getElementById("folder-path").value;
+  let fileName = document.getElementById("file-name").value;
   const voiceId = document.getElementById("voice-select").value;
 
-  if (!text || !folderInput || !fileName || !voiceId) {
-    alert("Please fill in all fields.");
+  if (!text) {
+    alert("Please enter some text.");
     return;
   }
 
-  // add "button-pending" class to button
+  if (!folderPath) {
+    alert("Please select a folder.");
+    return;
+  }
+
+  if (!fileName) {
+    alert("Please enter a file name.");
+    return;
+  }
+
+  if (!voiceId) {
+    alert("Please select a voice.");
+    return;
+  }
+
+  if (!fileName.endsWith(".mp3")) fileName += ".mp3";
   document.getElementById("generate-btn").classList.add("button-pending");
   document.getElementById("generate-btn").disabled = true;
-
-  const XI_API_KEY = localStorage.getItem("elevenLabsKey");
-  const API_URL = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`;
+  const apiKey = localStorage.getItem("elevenLabsKey");
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "xi-api-key": XI_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: text,
-        model_id: "eleven_multilingual_v2",
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8,
-          style: 0.0,
-          use_speaker_boost: true,
-        },
-      }),
+    const result = await window.electronAPI.generateAudioFile({
+      text,
+      folderPath,
+      fileName,
+      voiceId,
+      apiKey,
     });
-
-    if (!response.ok) {
-      console.error(response);
-      throw new Error(`API Error: ${response.statusText}`);
+    if (result.success) {
+      alert(`Audio file saved at ${result.filePath}`);
+    } else {
+      alert(`Error: ${result.error}`);
     }
 
-    const fileStream = response.body;
-
-    const fileHandle = await window.showSaveFilePicker({
-      suggestedName: fileName,
-      types: [
-        { description: "Audio Files", accept: { "audio/mpeg": [".mp3"] } },
-      ],
-      id: "output",
-    });
-    const writable = await fileHandle.createWritable();
-
-    if (fileStream) {
-      const reader = fileStream.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        await writable.write(value);
-      }
-    }
-
-    await writable.close();
-    alert("MP3 file successfully generated!");
-
-    // add audio player to page to play generated MP3
-    const audioPlayer = document.getElementById("audio-player");
-    audioPlayer.innerHTML = `
-<audio controls>
-  <source src="${URL.createObjectURL(
-    await fileHandle.getFile()
-  )}" type="audio/mpeg">
-</audio>
-    `;
+    document.getElementById("audio-player-wrapper").classList.remove("hidden");
     document.getElementById("audio-controls").classList.add("hidden");
+    // set audio player source
+    resultAudioFileName = result.filePath;
+    document.getElementById("audio-player").src = result.filePath;
+    document.getElementById("audio-player").load();
 
     document.getElementById("video-controls").classList.remove("hidden");
-    document.getElementById("video-controls").classList.add("visible");
   } catch (error) {
     console.error(error);
     // remove "button-pending" class from button
@@ -167,21 +143,108 @@ const generateAudioFile = async () => {
   }
 };
 
-function generateVideoFile() {
-  const folderInput = document.getElementById("folder-input").files[0];
-  const fileName = document.getElementById("file-name").value || "output.mp4";
-  const character = document.getElementById("video-character").value;
+async function checkProjectStatus(projectId, apiKey, baseUrl) {
+  const projectUrl = `${baseUrl}/v1/projects/${projectId}`;
+  while (true) {
+    const response = await fetch(projectUrl, {
+      method: "GET",
+      headers: {
+        "X-API-KEY": apiKey,
+      },
+    });
 
-  if (!character) {
-    alert("Please fill in all fields.");
-    return;
+    if (!response.ok) {
+      throw new Error(`Failed to check project status: ${response.statusText}`);
+    }
+
+    const projectData = await response.json();
+    if (projectData.videoUrl) {
+      return projectData.videoUrl;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
   }
+}
 
-  // add "button-pending" class to button
+async function generateVideoFile() {
+  const folderPath = document.getElementById("folder-path").value;
+  const fileName = document.getElementById("file-name").value + ".mp4";
+  const characterFile = document.getElementById("video-character").files[0];
+
+  // Add "button-pending" class to button
   document.getElementById("generate-video-btn").classList.add("button-pending");
   document.getElementById("generate-video-btn").disabled = true;
 
-  const XI_API_KEY = localStorage.getItem("hydraKey");
+  const API_KEY = localStorage.getItem("hydraKey");
+  const BASE_URL = "https://mercury.dev.dream-ai.com/api";
+
+  try {
+    // Upload character image
+    const characterFormData = new FormData();
+    characterFormData.append("file", characterFile);
+
+    const characterResponse = await fetch(`${BASE_URL}/v1/portrait`, {
+      method: "POST",
+      headers: {
+        "X-API-KEY": API_KEY,
+      },
+      body: characterFormData,
+    });
+
+    if (!characterResponse.ok) {
+      throw new Error(
+        `Character upload failed: ${characterResponse.statusText}`
+      );
+    }
+
+    const characterData = await characterResponse.json();
+    const avatarImageUrl = characterData.url;
+
+    // Upload audio file
+    const voiceUrl = await window.electron.uploadAudioFile(
+      resultAudioFileName,
+      API_KEY
+    );
+
+    // Generate video
+    const videoResponse = await fetch(`${BASE_URL}/v1/characters`, {
+      method: "POST",
+      headers: {
+        "X-API-KEY": API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        avatarImage: avatarImageUrl,
+        voiceUrl: voiceUrl,
+        audioSource: "audio",
+        aspectRatio: "1:1",
+      }),
+    });
+
+    if (!videoResponse.ok) {
+      throw new Error(`Video generation failed: ${videoResponse.statusText}`);
+    }
+
+    const videoData = await videoResponse.json();
+    const jobId = videoData.jobId;
+
+    // Check project status
+    const videoUrl = await checkProjectStatus(jobId, API_KEY, BASE_URL);
+
+    window.electronAPI.downloadVideoHedra({ videoUrl, folderPath, fileName });
+    alert(`Video generated successfully`);
+    document.getElementById("video-player").src = videoUrl;
+    document.getElementById("video-player").load();
+    document.getElementById("video-player").classList.remove("hidden");
+  } catch (error) {
+    console.error(error);
+    alert(`Failed to generate video: ${error.message}`);
+  } finally {
+    document
+      .getElementById("generate-video-btn")
+      .classList.remove("button-pending");
+    document.getElementById("generate-video-btn").disabled = false;
+  }
 }
 
 // run function on window load
@@ -207,4 +270,26 @@ window.onload = function () {
   document
     .getElementById("voice-select")
     .addEventListener("change", showVoiceDetails);
+
+  document
+    .getElementById("generate-video-btn")
+    .addEventListener("click", generateVideoFile);
+
+  document
+    .getElementById("refresh-voices")
+    .addEventListener("click", fillVoiceDropdown);
 };
+
+document.getElementById("folder-btn").addEventListener("click", async (e) => {
+  e.preventDefault();
+  try {
+    const folderPath = await window.electronAPI.selectFolder();
+    if (folderPath) {
+      document.getElementById("folder-path").value = folderPath;
+    } else {
+      console.log("No folder selected");
+    }
+  } catch (error) {
+    console.error("Error selecting folder:", error);
+  }
+});

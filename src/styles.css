@@ -50,6 +50,7 @@ h1 {
 
 label {
   font-size: 14px;
+  margin-left: -5px;
   margin-bottom: 5px;
   font-weight: bold;
   color: #555;
@@ -73,6 +74,7 @@ input[type="file"]:focus {
 }
 
 .button {
+  width: 100%;
   margin-top: 10px;
   padding: 10px 15px;
   font-size: 16px;
@@ -150,6 +152,7 @@ input[type="file"]:focus {
 .horizontal-layout {
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 10px;
 }
 
@@ -159,4 +162,14 @@ input[type="file"]:focus {
 
 .visible {
   display: block;
+}
+
+.refresh-voices {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+}
+
+#video-player {
+  width: 100%;
 }

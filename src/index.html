@@ -12,18 +12,24 @@
       <button id="settings-btn">⚙️</button>
       <h1>Text to Speech to Video Generator</h1>
       <form id="mp3-generator-form" class="form">
-        <div class="form-group">
-          <label for="text-input">Enter Text:</label>
-          <textarea
-            id="text-input"
-            rows="6"
-            placeholder="Type or paste text here..."
-          ></textarea>
-        </div>
         <span id="audio-controls" class="form">
+          <div class="form-group">
+            <label for="text-input">Enter Text:</label>
+            <textarea
+              id="text-input"
+              rows="6"
+              placeholder="Type or paste text here..."
+            ></textarea>
+          </div>
           <div class="form-group">
             <label for="voice-select">Choose a Voice:</label>
             <div class="horizontal-layout">
+              <input
+                type="button"
+                id="refresh-voices"
+                value="🔄"
+                class="refresh-voices"
+              />
               <select id="voice-select" onselect="showVoiceDetails">
                 <option value="">None</option>
               </select>
@@ -31,28 +37,43 @@
             </div>
           </div>
 
-          <div class="horizontal-layout">
-            <div class="form-group">
-              <label for="folder-input">Select Output Folder:</label>
-              <input
-                type="file"
-                id="folder-input"
-                webkitdirectory
-                directory
-                multiple
-              />
-            </div>
-            <div class="form-group">
-              <label for="file-name">File Name:</label>
-              <input type="text" id="file-name" placeholder="Enter file name" />
-            </div>
-          </div>
+          <div class="form-group">
+            <label for="folder-input">Select Output Folder and File</label>
 
+            <table>
+              <tr>
+                <td>
+                  <button type="button" id="folder-btn" class="button-small">
+                    Select Folder
+                  </button>
+                </td>
+                <td><input type="text" id="folder-path" disabled /></td>
+              </tr>
+              <tr>
+                <td><span>File Name:</span></td>
+                <td>
+                  <input
+                    type="text"
+                    id="file-name"
+                    placeholder="Enter file name"
+                    value="output_audio"
+                  />
+                </td>
+              </tr>
+            </table>
+          </div>
           <button type="button" id="generate-btn" class="button">
             Generate audio
           </button>
         </span>
-        <div id="audio-player"></div>
+        <div id="audio-player-wrapper" class="hidden">
+          <div class="form-group">
+            <label for="audio-player">Generated audio:</label>
+            <audio controls id="audio-player">
+              <source type="audio/mpeg" />
+            </audio>
+          </div>
+        </div>
         <span id="video-controls" class="hidden">
           <div class="form-group">
             <label for="video-character">Select Character:</label>
@@ -61,6 +82,9 @@
           <button type="button" id="generate-video-btn" class="button">
             Generate Video
           </button>
+          <video id="video-player" controls class="hidden">
+            <source type="video/mp4" />
+          </video>
         </span>
       </form>
     </div>
