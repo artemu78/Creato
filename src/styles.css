@@ -22,9 +22,8 @@ body {
 }
 
 .container {
-  width: 90%;
-  max-width: 500px;
-  background: #fff;
+  width: 600px;
+  background: #eef;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
@@ -172,4 +171,8 @@ input[type="file"]:focus {
 
 #video-player {
   width: 100%;
+}
+
+.gray-text {
+  color: #777;
 }

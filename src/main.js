@@ -1,22 +1,24 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
-// const fetch = require("node-fetch");
-// import fetch from "node-fetch";
+require("electron-reload")(path.join(__dirname, "src"), {
+  electron: path.join(__dirname, "..", "node_modules", ".bin", "electron"),
+  forceHardReset: true,
+});
 
 let mainWindow;
 
 app.on("ready", () => {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1007,
+    height: 800,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  mainWindow.loadFile(path.join(__dirname, "index.html"));
+  mainWindow.loadFile(path.join(__dirname, "index_react.html"));
   mainWindow.webContents.openDevTools();
 });
 
@@ -29,7 +31,7 @@ ipcMain.handle(
   async (event, { apiKey, text, folderPath, fileName, voiceId }) => {
     const fetch = (await import("node-fetch")).default;
     const API_URL = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
-
+    const model_id = "eleven_multilingual_v2";
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -37,10 +39,11 @@ ipcMain.handle(
           "Content-Type": "application/json",
           "xi-api-key": apiKey,
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, model_id }),
       });
 
       if (!response.ok) {
+        console.error(response);
         throw new Error(`API Error: ${response.statusText}`);
       }
 

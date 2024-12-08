@@ -1,45 +1,45 @@
 const path = require("path");
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const isWatching = process.env.WEBPACK_WATCH === "true";
 
 module.exports = {
+  watch: isWatching,
   mode: "development",
-  entry: "./src/renderer.js", // Update the entry point if necessary
+  entry: "./src/index.js",
   output: {
     filename: "bundle.js",
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "src"),
   },
-  target: "electron-renderer", // Add this line
+  target: "electron-renderer",
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env"],
+            presets: ["@babel/preset-env", "@babel/preset-react"],
           },
         },
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
       },
     ],
   },
   resolve: {
-    extensions: [".js"],
-  },
-  experiments: {
-    outputModule: true,
-  },
-  output: {
-    module: true,
-    filename: "bundle.js",
-    path: path.resolve(__dirname, "src"),
-  },
-  externals: {
-    fs: "commonjs fs", // Add this line
-    path: "commonjs path", // Add this line
-    electron: "commonjs electron", // Add this line
+    extensions: [".js", ".jsx"],
   },
   plugins: [
-    new NodePolyfillPlugin(), // Add this line
+    new NodePolyfillPlugin(),
+    new HtmlWebpackPlugin({
+      template: "./src/index_react_src.html", // Path to your HTML template
+      filename: path.join(path.join(__dirname, "src"), "index_react.html"), // Output filename
+      inject: "body", // Inject scripts into the body
+    }),
   ],
 };

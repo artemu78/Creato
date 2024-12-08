@@ -1,5 +1,7 @@
 const elevenVoices = {};
 let resultAudioFileName = "";
+let languageCodeISO639 = "";
+
 const BASE_URL = "https://mercury.dev.dream-ai.com/api";
 
 const closeSettingsClick = () => {
@@ -85,6 +87,7 @@ const generateAudioFile = async () => {
   const folderPath = document.getElementById("folder-path").value;
   let fileName = document.getElementById("file-name").value;
   const voiceId = document.getElementById("voice-select").value;
+  // const languageCode = getTextISOCode();
 
   if (!text) {
     alert("Please enter some text.");
@@ -293,3 +296,18 @@ document.getElementById("folder-btn").addEventListener("click", async (e) => {
     console.error("Error selecting folder:", error);
   }
 });
+
+function getTextISOCode() {
+  const input = document.getElementById("dropdown");
+  const datalist = document.getElementById("options");
+  const selectedValue = input.value;
+
+  // Match input value to an option
+  const matchedOption = Array.from(datalist.options).find(
+    (option) => option.value === selectedValue
+  );
+  if (matchedOption) {
+    return matchedOption.getAttribute("data-id"); // Get the associated ID
+  }
+  return null;
+}
