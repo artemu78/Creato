@@ -4,15 +4,16 @@ import LoadingButton from "@mui/lab/LoadingButton";
 
 export const VideoButton = ({
   audioSrc,
-  generateVideoFile,
+  generate,
   videoSrc,
   resetForm,
+  isGenerateButtonDisabled,
 }) => {
   const [videoButtonEnabled, setVideoButtonEnabled] = useState(true);
 
   const startGenerateVideo = async () => {
     setVideoButtonEnabled(false);
-    await generateVideoFile();
+    await generate();
     setVideoButtonEnabled(true);
   };
 
@@ -34,6 +35,7 @@ export const VideoButton = ({
         variant="contained"
         onClick={startGenerateVideo}
         loading={!videoButtonEnabled}
+        disabled={isGenerateButtonDisabled}
       >
         Generate Video
       </LoadingButton>
