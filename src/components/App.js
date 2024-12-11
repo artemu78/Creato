@@ -1,7 +1,6 @@
-// src/components/App.js
+import LoadingButton from "@mui/lab/LoadingButton";
 import React, { useState, useEffect } from "react";
 import { VideoButton } from "./VideoButton";
-import { Button } from "@mui/material";
 import { Header } from "./Header";
 import { VoiceDetail } from "./VoiceDetail";
 import {
@@ -18,10 +17,30 @@ const App = () => {
   const [folderPath, setFolderPath] = useState("");
   const [fileName, setFileName] = useState("output_audio");
   const [audioSrc, setAudioSrc] = useState("");
+  const [audioButtonEnabled, setAudioButtonEnabled] = useState(true);
 
   useEffect(() => {
     fillVoiceDropdown({ setVoices });
   }, []);
+
+  const resetForm = () => {
+    setText("");
+    setFileName("output_audio");
+    setAudioSrc("");
+    setVideoSrc("");
+  };
+
+  const generateAudio = async () => {
+    setAudioButtonEnabled(false);
+    await generateAudioFile({
+      text,
+      folderPath,
+      fileName,
+      selectedVoice: selectedVoiceId,
+      setAudioSrc,
+    });
+    setAudioButtonEnabled(true);
+  };
 
   const generateVideoFile = async () => {
     const characterFile = document.getElementById("video-character").files[0];
@@ -169,25 +188,19 @@ const App = () => {
             </tbody>
           </table>
         </div>
-        <Button
+        <LoadingButton
           variant="contained"
-          onClick={() =>
-            generateAudioFile({
-              text,
-              folderPath,
-              fileName,
-              selectedVoice: selectedVoiceId,
-              setAudioSrc,
-            })
-          }
+          onClick={generateAudio}
+          loading={!audioButtonEnabled}
         >
           Generate audio
-        </Button>
+        </LoadingButton>
         {audioSrc && (
           <VideoButton
             audioSrc={audioSrc}
             videoSrc={videoSrc}
             generateVideoFile={generateVideoFile}
+            resetForm={resetForm}
           />
         )}
       </form>

@@ -15,6 +15,11 @@ export const generateAudioFile = async ({
     return;
   }
 
+  // check if file extension is .mp3 and add it if not
+  if (!fileName.endsWith(".mp3")) {
+    fileName += ".mp3";
+  }
+
   const apiKey = localStorage.getItem("elevenLabsKey");
   const result = await window.electronAPI.generateAudioFile({
     text,

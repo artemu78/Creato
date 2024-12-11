@@ -1,7 +1,21 @@
 import React, { useState } from "react";
 import { Button } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 
-export const VideoButton = ({ audioSrc, generateVideoFile, videoSrc }) => {
+export const VideoButton = ({
+  audioSrc,
+  generateVideoFile,
+  videoSrc,
+  resetForm,
+}) => {
+  const [videoButtonEnabled, setVideoButtonEnabled] = useState(true);
+
+  const startGenerateVideo = async () => {
+    setVideoButtonEnabled(false);
+    await generateVideoFile();
+    setVideoButtonEnabled(true);
+  };
+
   return (
     <>
       {audioSrc && (
@@ -16,13 +30,22 @@ export const VideoButton = ({ audioSrc, generateVideoFile, videoSrc }) => {
         <label htmlFor="video-character">Select Character:</label>
         <input type="file" id="video-character" accept="image/*" />
       </div>
-      <Button variant="contained" onClick={generateVideoFile}>
+      <LoadingButton
+        variant="contained"
+        onClick={startGenerateVideo}
+        loading={!videoButtonEnabled}
+      >
         Generate Video
-      </Button>
+      </LoadingButton>
       {videoSrc && (
-        <video id="video-player" controls>
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+        <>
+          <video id="video-player" controls>
+            <source src={videoSrc} type="video/mp4" />
+          </video>
+          <Button variant="contained" onClick={resetForm}>
+            Reset Form and Start Over
+          </Button>
+        </>
       )}
     </>
   );
