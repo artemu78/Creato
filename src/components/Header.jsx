@@ -1,4 +1,5 @@
 import MenuIcon from "@mui/icons-material/Menu";
+import packageJson from "../../package.json";
 import React, { useState, useEffect } from "react";
 import {
   Button,
@@ -28,6 +29,7 @@ export const Header = () => {
   const [openAIKey, setOpenAIKey] = useState("");
   const [hedraKey, setHedraKey] = useState("");
   const [elevenKey, setElevenKey] = useState("");
+  const version = packageJson.version;
 
   const fillSettings = () => {
     const openAIKey = localStorage.getItem("openAIKey");
@@ -168,6 +170,8 @@ export const Header = () => {
                 Convert your text into MP3 and then into MP4.
                 <br />
                 API used: Hedra, Eleven Labs.
+                <br />
+                Version: {version}
               </DialogContentText>
             </DialogContent>
             <DialogActions>

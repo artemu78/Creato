@@ -7,7 +7,6 @@ const HEDRA_BASE_URL = "https://mercury.dev.dream-ai.com/api";
 contextBridge.exposeInMainWorld("electron", {
   send: (channel, data) => {
     // ipcRenderer.send(channel, data);
-    console.log("data", data);
   },
   receive: (channel, callback) =>
     ipcRenderer.on(channel, (event, ...args) => callback(...args)),

@@ -1,4 +1,3 @@
-import LoadingButton from "@mui/lab/LoadingButton";
 import React, { useState, useEffect } from "react";
 import { VideoButton } from "./VideoButton";
 import { Header } from "./Header";
@@ -9,6 +8,7 @@ import {
   fillVoiceDropdown,
   checkProjectStatus,
 } from "./../lib";
+
 const App = () => {
   const [videoSrc, setVideoSrc] = useState("");
   const [text, setText] = useState("");
@@ -18,6 +18,16 @@ const App = () => {
   const [fileName, setFileName] = useState("output_audio");
   const [audioSrc, setAudioSrc] = useState("");
   const [audioButtonEnabled, setAudioButtonEnabled] = useState(true);
+  const [isGenerateButtonDisabled, setIsGenerateButtonDisabled] =
+    useState(true);
+
+  useEffect(() => {
+    if (text && folderPath && fileName && selectedVoiceId) {
+      setIsGenerateButtonDisabled(false);
+    } else {
+      setIsGenerateButtonDisabled(true);
+    }
+  }, [text, folderPath, fileName, selectedVoiceId]);
 
   useEffect(() => {
     fillVoiceDropdown({ setVoices });
@@ -31,7 +41,6 @@ const App = () => {
   };
 
   const generateAudio = async () => {
-    setAudioButtonEnabled(false);
     await generateAudioFile({
       text,
       folderPath,
@@ -39,13 +48,19 @@ const App = () => {
       selectedVoice: selectedVoiceId,
       setAudioSrc,
     });
-    setAudioButtonEnabled(true);
+  };
+
+  const generate = async () => {
+    await generateAudio();
+    await generateVideoFile();
   };
 
   const generateVideoFile = async () => {
     const characterFile = document.getElementById("video-character").files[0];
     const API_KEY = localStorage.getItem("hydraKey");
     const BASE_URL = "https://mercury.dev.dream-ai.com/api";
+    let voiceUrl;
+    let avatarImageUrl;
 
     try {
       const characterFormData = new FormData();
@@ -66,10 +81,22 @@ const App = () => {
       }
 
       const characterData = await characterResponse.json();
-      const avatarImageUrl = characterData.url;
+      avatarImageUrl = characterData.url;
+    } catch (error) {
+      console.error(error);
+      alert(`Failed to upload character: ${error.message}`);
+      return;
+    }
 
-      const voiceUrl = await window.electron.uploadAudioFile(audioSrc, API_KEY);
+    try {
+      voiceUrl = await window.electron.uploadAudioFile(audioSrc, API_KEY);
+    } catch (error) {
+      console.error(error);
+      alert(`Failed to upload audio: ${error.message}`);
+      return;
+    }
 
+    try {
       const videoResponse = await fetch(`${BASE_URL}/v1/characters`, {
         method: "POST",
         headers: {
@@ -90,7 +117,6 @@ const App = () => {
 
       const videoData = await videoResponse.json();
       const jobId = videoData.jobId;
-
       const videoUrl = await checkProjectStatus(jobId, API_KEY, BASE_URL);
       window.electronAPI.downloadVideoHedra({
         videoUrl,
@@ -167,7 +193,8 @@ const App = () => {
                     type="text"
                     id="folder-path"
                     value={folderPath}
-                    disabled
+                    onClick={() => selectFolder(setFolderPath)}
+                    readOnly
                   />
                 </td>
               </tr>
@@ -188,21 +215,20 @@ const App = () => {
             </tbody>
           </table>
         </div>
-        <LoadingButton
+        {/* <LoadingButton
           variant="contained"
           onClick={generateAudio}
           loading={!audioButtonEnabled}
         >
           Generate audio
-        </LoadingButton>
-        {audioSrc && (
-          <VideoButton
-            audioSrc={audioSrc}
-            videoSrc={videoSrc}
-            generateVideoFile={generateVideoFile}
-            resetForm={resetForm}
-          />
-        )}
+        </LoadingButton> */}
+        <VideoButton
+          audioSrc={audioSrc}
+          videoSrc={videoSrc}
+          generate={generate}
+          resetForm={resetForm}
+          isGenerateButtonDisabled={isGenerateButtonDisabled}
+        />
       </form>
     </div>
   );
