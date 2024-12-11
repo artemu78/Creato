@@ -28,9 +28,7 @@ export const generateAudioFile = async ({
     voiceId: selectedVoice,
     apiKey,
   });
-
   if (result.success) {
-    alert(`Audio file saved at ${result.filePath}`);
     setAudioSrc(result.filePath);
   } else {
     alert(`Error: ${result.error}`);

@@ -1,9 +1,10 @@
 {
   "name": "creato",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Electron app for generating MP3 files from text",
   "main": "src/main.js",
   "scripts": {
+    "bump-version": "npm-version-bump",
     "build": "webpack",
     "watch": "WEBPACK_WATCH=true webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -37,6 +38,7 @@
     "electron": "^33.2.1",
     "electron-reload": "^2.0.0-alpha.1",
     "html-webpack-plugin": "^5.6.3",
+    "npm-version-bump": "^1.0.0",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4"
   },
