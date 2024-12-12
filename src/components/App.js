@@ -1,7 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { VideoButton } from "./VideoButton";
 import { Header } from "./Header";
 import { VoiceDetail } from "./VoiceDetail";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CheckIcon from "@mui/icons-material/Check";
+import {
+  Box,
+  Stack,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+} from "@mui/material";
 import {
   generateAudioFile,
   selectFolder,
@@ -10,6 +20,7 @@ import {
 } from "./../lib";
 
 const App = () => {
+  const audioRef = useRef(null);
   const [videoSrc, setVideoSrc] = useState("");
   const [text, setText] = useState("");
   const [voices, setVoices] = useState([]);
@@ -17,17 +28,19 @@ const App = () => {
   const [folderPath, setFolderPath] = useState("");
   const [fileName, setFileName] = useState("output_audio");
   const [audioSrc, setAudioSrc] = useState("");
-  const [audioButtonEnabled, setAudioButtonEnabled] = useState(true);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isGenerateButtonDisabled, setIsGenerateButtonDisabled] =
     useState(true);
+  const [voiceSelectionExpanded, setVoiceSelectionExpanded] = useState(true);
+  const [fileSelectionExpanded, setFileSelectionExpanded] = useState(true);
 
   useEffect(() => {
-    if (text && folderPath && fileName && selectedVoiceId) {
+    if (text && folderPath && fileName && selectedVoiceId && selectedFile) {
       setIsGenerateButtonDisabled(false);
     } else {
       setIsGenerateButtonDisabled(true);
     }
-  }, [text, folderPath, fileName, selectedVoiceId]);
+  }, [text, folderPath, fileName, selectedVoiceId, selectedFile]);
 
   useEffect(() => {
     fillVoiceDropdown({ setVoices });
@@ -56,7 +69,6 @@ const App = () => {
   };
 
   const generateVideoFile = async () => {
-    const characterFile = document.getElementById("video-character").files[0];
     const API_KEY = localStorage.getItem("hydraKey");
     const BASE_URL = "https://mercury.dev.dream-ai.com/api";
     let voiceUrl;
@@ -64,7 +76,7 @@ const App = () => {
 
     try {
       const characterFormData = new FormData();
-      characterFormData.append("file", characterFile);
+      characterFormData.append("file", selectedFile);
 
       const characterResponse = await fetch(`${BASE_URL}/v1/portrait`, {
         method: "POST",
@@ -146,88 +158,121 @@ const App = () => {
             onChange={(e) => setText(e.target.value)}
           ></textarea>
         </div>
-        <div className="form-group">
-          <label htmlFor="voice-select">Choose a Voice:</label>
-          <div className="horizontal-layout">
-            <input
-              type="button"
-              id="refresh-voices"
-              value="🔄"
-              className="refresh-voices"
-              onClick={() => fillVoiceDropdown({ setVoices })}
-            />
-            <select
-              id="voice-select"
-              value={selectedVoiceId}
-              onChange={(e) => setSelectedVoice(e.target.value)}
-            >
-              <option value="">None</option>
-              {voices.map((voice) => (
-                <option key={voice.voice_id} value={voice.voice_id}>
-                  {voice.name}
-                </option>
-              ))}
-            </select>
-            {selectedVoiceId && (
-              <VoiceDetail voices={voices} voiceId={selectedVoiceId} />
-            )}
-          </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="folder-input">Select Output Folder and File</label>
-          <table>
-            <tbody>
-              <tr>
-                <td>
-                  <button
-                    type="button"
-                    id="folder-btn"
-                    className="button-small"
-                    onClick={() => selectFolder(setFolderPath)}
-                  >
-                    Select Folder
-                  </button>
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="folder-path"
-                    value={folderPath}
-                    onClick={() => selectFolder(setFolderPath)}
-                    readOnly
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span>File Name:</span>
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="file-name"
-                    placeholder="Enter file name"
-                    value={fileName}
-                    onChange={(e) => setFileName(e.target.value)}
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        {/* <LoadingButton
-          variant="contained"
-          onClick={generateAudio}
-          loading={!audioButtonEnabled}
+
+        <Accordion
+          expanded={voiceSelectionExpanded}
+          onChange={() => setVoiceSelectionExpanded(!voiceSelectionExpanded)}
         >
-          Generate audio
-        </LoadingButton> */}
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box>
+              <Stack direction="row">
+                {selectedVoiceId && <CheckIcon color="success" />}
+                <Typography sx={{ ml: 1 }}>Choose a Voice</Typography>
+              </Stack>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <div className="form-group">
+              <div className="horizontal-layout">
+                <input
+                  type="button"
+                  id="refresh-voices"
+                  value="🔄"
+                  className="refresh-voices"
+                  onClick={() => fillVoiceDropdown({ setVoices })}
+                />
+                <select
+                  id="voice-select"
+                  value={selectedVoiceId}
+                  onChange={(e) => {
+                    setSelectedVoice(e.target.value);
+                    audioRef?.current?.load();
+                  }}
+                >
+                  <option value="">None</option>
+                  {voices.map((voice) => (
+                    <option key={voice.voice_id} value={voice.voice_id}>
+                      {voice.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedVoiceId && (
+                <VoiceDetail
+                  audioRef={audioRef}
+                  voices={voices}
+                  voiceId={selectedVoiceId}
+                />
+              )}
+            </div>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion
+          expanded={fileSelectionExpanded}
+          onChange={() => {
+            setFileSelectionExpanded(!fileSelectionExpanded);
+          }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            {folderPath && fileName && (
+              <CheckIcon color="success" sx={{ mr: 1 }} />
+            )}
+            <Typography>Select Output Folder and File</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <div className="form-group">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <button
+                        type="button"
+                        id="folder-btn"
+                        className="button-small"
+                        onClick={() => selectFolder(setFolderPath)}
+                      >
+                        Select Folder
+                      </button>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        id="folder-path"
+                        value={folderPath}
+                        onClick={() => selectFolder(setFolderPath)}
+                        readOnly
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span>File Name:</span>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        id="file-name"
+                        placeholder="Enter file name"
+                        value={fileName}
+                        onChange={(e) => setFileName(e.target.value)}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </AccordionDetails>
+        </Accordion>
+
         <VideoButton
           audioSrc={audioSrc}
           videoSrc={videoSrc}
           generate={generate}
           resetForm={resetForm}
           isGenerateButtonDisabled={isGenerateButtonDisabled}
+          setSelectedFile={setSelectedFile}
+          selectedFile={selectedFile}
         />
       </form>
     </div>

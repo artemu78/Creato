@@ -1,7 +1,7 @@
 {
   "name": "creato",
-  "version": "1.2.0",
-  "description": "Electron app for generating MP3 files from text",
+  "version": "1.2.2",
+  "description": "Electron app for generating video files from text",
   "main": "src/main.js",
   "scripts": {
     "bump-version": "npm-version-bump",
