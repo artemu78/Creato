@@ -52,6 +52,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     }
   },
   generateAudioFile: (data) => ipcRenderer.invoke("generate-audio-file", data),
+  generateAudioFileOpenAI: (data) =>
+    ipcRenderer.invoke("generate-voice-openai", data),
   downloadVideoHedra: (data) =>
     ipcRenderer.invoke("download-video-hedra", data),
 });

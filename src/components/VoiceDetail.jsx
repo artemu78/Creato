@@ -1,17 +1,28 @@
 import React from "react";
 import { Box } from "@mui/material";
 
-export const VoiceDetail = ({ voice, voices, voiceId, audioRef }) => {
-  voice = voices.find((v) => v.voice_id === voiceId);
+export const VoiceDetail = ({ voice, voices, audioRef }) => {
+  let voiceObject = {};
+  const vendor = voice.split(":")[0];
+  const voiceId = voice.split(":")[1];
+
+  if (vendor === "labs") {
+    voiceObject = voices.find((v) => v.voice_id === voiceId);
+  } else {
+    voiceObject = {
+      preview_url: `https://cdn.openai.com/API/docs/audio/${voiceId}.wav`,
+    };
+  }
+
   return (
     <Box sx={{ mt: 1, ml: 3 }}>
       <div>
-        <b>{voice?.name}</b> {voice?.labels?.accent}{" "}
-        {voice?.labels?.description} {voice?.labels?.age}{" "}
-        {voice?.labels?.gender} {voice?.labels?.use_case}
+        <b>{voiceObject?.name}</b> {voiceObject?.labels?.accent}{" "}
+        {voiceObject?.labels?.description} {voiceObject?.labels?.age}{" "}
+        {voiceObject?.labels?.gender} {voiceObject?.labels?.use_case}
       </div>
       <audio controls ref={audioRef}>
-        <source src={voice?.preview_url} type="audio/mpeg" />
+        <source src={voiceObject?.preview_url} type="audio/mpeg" />
       </audio>
     </Box>
   );

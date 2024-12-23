@@ -10,7 +10,7 @@ let mainWindow;
 
 app.on("ready", () => {
   mainWindow = new BrowserWindow({
-    width: 1000,
+    width: 1001,
     height: 800,
     webPreferences: {
       nodeIntegration: true,
@@ -56,6 +56,40 @@ ipcMain.handle(
     } catch (error) {
       console.error(error);
       return { success: false, error: error.message };
+    }
+  }
+);
+
+ipcMain.handle(
+  "generate-voice-openai",
+  async (event, { text, folderPath, fileName, voiceId, apiKey }) => {
+    const fetch = (await import("node-fetch")).default;
+    const API_URL = "https://api.openai.com/v1/audio/speech";
+    const model = "tts-1";
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ input: text, model, voice: voiceId }),
+      });
+
+      if (!response.ok) {
+        console.error(response);
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const audioBuffer = await response.arrayBuffer();
+      const filePath = path.join(folderPath, fileName);
+      const buffer = Buffer.from(audioBuffer);
+      fs.writeFileSync(filePath, buffer);
+
+      return { success: true, filePath };
+    } catch (error) {
+      console.error(error);
+      return null;
     }
   }
 );

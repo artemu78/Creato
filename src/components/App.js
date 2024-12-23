@@ -1,3 +1,4 @@
+import LoadingButton from "@mui/lab/LoadingButton";
 import React, { useState, useEffect, useRef } from "react";
 import { VideoButton } from "./VideoButton";
 import { Header } from "./Header";
@@ -11,20 +12,25 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Select,
+  ListSubheader,
+  MenuItem,
+  List,
 } from "@mui/material";
 import {
   generateAudioFile,
   selectFolder,
   fillVoiceDropdown,
   checkProjectStatus,
+  generateAudioFileOpenAI,
 } from "./../lib";
+import { use } from "react";
 
 const App = () => {
   const audioRef = useRef(null);
   const [videoSrc, setVideoSrc] = useState("");
   const [text, setText] = useState("");
   const [voices, setVoices] = useState([]);
-  const [selectedVoiceId, setSelectedVoice] = useState("");
   const [folderPath, setFolderPath] = useState("");
   const [fileName, setFileName] = useState("output_audio");
   const [audioSrc, setAudioSrc] = useState("");
@@ -33,14 +39,23 @@ const App = () => {
     useState(true);
   const [voiceSelectionExpanded, setVoiceSelectionExpanded] = useState(true);
   const [fileSelectionExpanded, setFileSelectionExpanded] = useState(true);
+  const [audioButtonEnabled, setAudioButtonEnabled] = useState(true);
+  const [voiceId, setVoiceId] = useState("");
 
   useEffect(() => {
-    if (text && folderPath && fileName && selectedVoiceId && selectedFile) {
+    const folderPath = localStorage.getItem("folderPath");
+    if (folderPath) {
+      setFolderPath(folderPath);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (text && folderPath && fileName && voiceId && selectedFile) {
       setIsGenerateButtonDisabled(false);
     } else {
       setIsGenerateButtonDisabled(true);
     }
-  }, [text, folderPath, fileName, selectedVoiceId, selectedFile]);
+  }, [text, folderPath, fileName, voiceId, selectedFile]);
 
   useEffect(() => {
     fillVoiceDropdown({ setVoices });
@@ -54,13 +69,26 @@ const App = () => {
   };
 
   const generateAudio = async () => {
-    await generateAudioFile({
-      text,
-      folderPath,
-      fileName,
-      selectedVoice: selectedVoiceId,
-      setAudioSrc,
-    });
+    setAudioButtonEnabled(false);
+    const vendor = voiceId.split(":")[0];
+    if (vendor === "labs") {
+      await generateAudioFile({
+        text,
+        folderPath,
+        fileName,
+        selectedVoice: voiceId.split(":")[1],
+        setAudioSrc,
+      });
+    } else {
+      await generateAudioFileOpenAI({
+        text,
+        folderPath,
+        fileName,
+        voiceId: voiceId.split(":")[1],
+        setAudioSrc,
+      });
+    }
+    setAudioButtonEnabled(true);
   };
 
   const generate = async () => {
@@ -143,6 +171,12 @@ const App = () => {
     }
   };
 
+  const changeVoice = (e) => {
+    const value = e.target.value;
+    setVoiceId(value);
+    audioRef?.current?.load();
+  };
+
   return (
     <div className="container">
       <Header />
@@ -158,7 +192,6 @@ const App = () => {
             onChange={(e) => setText(e.target.value)}
           ></textarea>
         </div>
-
         <Accordion
           expanded={voiceSelectionExpanded}
           onChange={() => setVoiceSelectionExpanded(!voiceSelectionExpanded)}
@@ -166,48 +199,65 @@ const App = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Box>
               <Stack direction="row">
-                {selectedVoiceId && <CheckIcon color="success" />}
+                {voiceId && <CheckIcon color="success" />}
                 <Typography sx={{ ml: 1 }}>Choose a Voice</Typography>
               </Stack>
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <div className="form-group">
-              <div className="horizontal-layout">
-                <input
-                  type="button"
-                  id="refresh-voices"
-                  value="🔄"
-                  className="refresh-voices"
-                  onClick={() => fillVoiceDropdown({ setVoices })}
-                />
-                <select
-                  id="voice-select"
-                  value={selectedVoiceId}
-                  onChange={(e) => {
-                    setSelectedVoice(e.target.value);
-                    audioRef?.current?.load();
-                  }}
+            <Select onChange={changeVoice} value={voiceId}>
+              <ListSubheader>
+                <Typography variant="h6">ElevenLabs</Typography>
+              </ListSubheader>
+              {voices.map((voice) => (
+                <MenuItem
+                  key={voice.voice_id}
+                  value={"labs:" + voice.voice_id}
+                  sx={{ ml: 2 }}
                 >
-                  <option value="">None</option>
-                  {voices.map((voice) => (
-                    <option key={voice.voice_id} value={voice.voice_id}>
-                      {voice.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {selectedVoiceId && (
-                <VoiceDetail
-                  audioRef={audioRef}
-                  voices={voices}
-                  voiceId={selectedVoiceId}
-                />
-              )}
-            </div>
+                  {voice.name}
+                </MenuItem>
+              ))}
+              <ListSubheader>
+                <Typography variant="h6">OpenAI</Typography>
+              </ListSubheader>
+              <MenuItem value="openai:alloy" sx={{ ml: 2 }}>
+                Alloy
+              </MenuItem>
+              <MenuItem value="openai:ash" sx={{ ml: 2 }}>
+                Ash
+              </MenuItem>
+              <MenuItem value="openai:coral" sx={{ ml: 2 }}>
+                Coral
+              </MenuItem>
+              <MenuItem value="openai:echo" sx={{ ml: 2 }}>
+                Echo
+              </MenuItem>
+              <MenuItem value="openai:fable" sx={{ ml: 2 }}>
+                Fable
+              </MenuItem>
+              <MenuItem value="openai:onyx" sx={{ ml: 2 }}>
+                Onyx
+              </MenuItem>
+              <MenuItem value="openai:nova" sx={{ ml: 2 }}>
+                Nova
+              </MenuItem>
+              <MenuItem value="openai:sage" sx={{ ml: 2 }}>
+                Sage
+              </MenuItem>
+              <MenuItem value="openai:shimmer" sx={{ ml: 2 }}>
+                Shimmer
+              </MenuItem>
+            </Select>
+            {voiceId && (
+              <VoiceDetail
+                audioRef={audioRef}
+                voices={voices}
+                voice={voiceId}
+              />
+            )}
           </AccordionDetails>
         </Accordion>
-
         <Accordion
           expanded={fileSelectionExpanded}
           onChange={() => {
@@ -265,6 +315,14 @@ const App = () => {
           </AccordionDetails>
         </Accordion>
 
+        <LoadingButton
+          variant="contained"
+          onClick={generateAudio}
+          loading={!audioButtonEnabled}
+        >
+          Generate audio
+        </LoadingButton>
+
         <VideoButton
           audioSrc={audioSrc}
           videoSrc={videoSrc}
@@ -278,5 +336,13 @@ const App = () => {
     </div>
   );
 };
+
+function MyListSubheader(props) {
+  return (
+    <Typography variant="h3" component="div">
+      <ListSubheader {...props} />
+    </Typography>
+  );
+}
 
 export default App;

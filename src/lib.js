@@ -1,6 +1,7 @@
 export const selectFolder = async (setFolderPath) => {
   const folderPath = await window.electronAPI.selectFolder();
   setFolderPath(folderPath);
+  localStorage.setItem("folderPath", folderPath);
 };
 
 export const generateAudioFile = async ({
@@ -21,7 +22,7 @@ export const generateAudioFile = async ({
   }
 
   const apiKey = localStorage.getItem("elevenLabsKey");
-  const result = await window.electronAPI.generateAudioFile({
+  const result = await window.electronAPI.generateAudioFileOpenAI({
     text,
     folderPath,
     fileName,
@@ -86,3 +87,35 @@ export async function checkProjectStatus(projectId, apiKey, baseUrl) {
     await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
   }
 }
+
+export const generateAudioFileOpenAI = async ({
+  text,
+  folderPath,
+  fileName,
+  voiceId,
+  setAudioSrc,
+}) => {
+  if (!text || !folderPath || !fileName || !voiceId) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  // check if file extension is .mp3 and add it if not
+  if (!fileName.endsWith(".mp3")) {
+    fileName += ".mp3";
+  }
+
+  const apiKey = localStorage.getItem("openAIKey");
+  const result = await window.electronAPI.generateAudioFileOpenAI({
+    text,
+    folderPath,
+    fileName,
+    voiceId,
+    apiKey,
+  });
+  if (result.success) {
+    setAudioSrc(result.filePath);
+  } else {
+    alert(`Error: ${result.error}`);
+  }
+};
